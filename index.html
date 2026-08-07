@@ -293,6 +293,17 @@
             grid-template-columns: 1fr 1fr;
             gap: 24px;
             margin-bottom: 22px;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        /* 单列模式（隐藏原文后） */
+        .display-section.single-col {
+            grid-template-columns: 1fr;
+        }
+
+        /* 隐藏原文面板 */
+        .panel-original.hidden {
+            display: none;
         }
 
         @media (max-width: 700px) {
@@ -317,6 +328,10 @@
             .input-actions {
                 flex-direction: row;
                 flex-wrap: wrap;
+            }
+            /* 小屏默认单列，隐藏时不额外处理 */
+            .display-section.single-col {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -370,7 +385,7 @@
             border-radius: 10px;
         }
 
-        /* ===== 原文标记颜色 ===== */
+        /* ===== 字符标记样式 ===== */
         .char-correct {
             color: #1f8b4c;
             background: rgba(31, 139, 76, 0.10);
@@ -404,10 +419,6 @@
         }
 
         /* ===== 识别结果 ===== */
-        .recognition-text {
-            color: #3d2c1f;
-        }
-
         .recognition-text .interim {
             color: #b0a094;
             font-style: italic;
@@ -566,6 +577,24 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+
+        /* ===== 原文隐藏时的提示 ===== */
+        .panel-original .hidden-hint {
+            display: none;
+            text-align: center;
+            padding: 30px 0;
+            color: #b0a094;
+            font-size: 15px;
+        }
+        .panel-original.hidden .hidden-hint {
+            display: block;
+        }
+        .panel-original.hidden .panel-content {
+            display: none;
+        }
+        .panel-original.hidden .panel-title .count {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -615,9 +644,9 @@
         </div>
 
         <!-- 显示区 -->
-        <div class="display-section">
-            <!-- 原文对照 -->
-            <div class="panel">
+        <div class="display-section" id="displaySection">
+            <!-- 原文对照（可隐藏） -->
+            <div class="panel panel-original" id="panelOriginal">
                 <div class="panel-title">
                     📖 原文对照
                     <span class="count" id="sourceCharCount">0 字</span>
@@ -625,9 +654,10 @@
                 <div class="panel-content" id="sourceDisplay">
                     <span class="empty-placeholder">请载入原文…</span>
                 </div>
+                <div class="hidden-hint">📌 原文已隐藏，请专注背诵</div>
             </div>
             <!-- 识别结果 -->
-            <div class="panel">
+            <div class="panel" id="panelRecog">
                 <div class="panel-title">
                     🗣️ 你的背诵
                     <span class="count" id="recogCharCount">0 字</span>
@@ -670,6 +700,7 @@
         // ================================================================
         //  📦  回声 Echo  ·  AI 智能背书系统
         //  技术：Web Speech API + LCS 文本对比 + 实时高亮
+        //  优化：载入原文后自动隐藏原文面板，只显示识别结果及错误标记
         // ================================================================
 
         (function() {
@@ -694,6 +725,8 @@
             const sourceCharCount = document.getElementById('sourceCharCount');
             const recogCharCount = document.getElementById('recogCharCount');
             const toast = document.getElementById('toast');
+            const panelOriginal = document.getElementById('panelOriginal');
+            const displaySection = document.getElementById('displaySection');
 
             // ---------- 状态 ----------
             let originalText = ''; // 原文（完整，含标点）
@@ -724,9 +757,6 @@
             }
 
             // ---------- LCS 对比算法 ----------
-            // 返回一个数组，表示 cleanOriginal 中每个字符的匹配状态
-            // 状态: 'correct' | 'wrong' | 'pending'
-            // 同时返回识别文本中每个字符的匹配状态（用于显示）
             function compareWithLCS(orig, recog) {
                 const m = orig.length;
                 const n = recog.length;
@@ -741,7 +771,6 @@
                     };
                 }
 
-                // 构建 LCS 矩阵
                 const dp = Array(m + 1);
                 for (let i = 0; i <= m; i++) {
                     dp[i] = Array(n + 1).fill(0);
@@ -757,7 +786,6 @@
                     }
                 }
 
-                // 回溯找出匹配的字符
                 const origMatched = Array(m).fill(false);
                 const recogMatched = Array(n).fill(false);
                 let i = m,
@@ -775,13 +803,9 @@
                     }
                 }
 
-                // 生成状态数组
-                // origStatus: 'correct' | 'wrong' | 'pending'
-                // pending 表示识别文本还未覆盖到（即 j 位置还没有对应的识别字符）
                 const origStatus = Array(m).fill('wrong');
                 const recogStatus = Array(n).fill('wrong');
 
-                // 标记匹配的
                 for (let idx = 0; idx < m; idx++) {
                     if (origMatched[idx]) {
                         origStatus[idx] = 'correct';
@@ -793,19 +817,12 @@
                     }
                 }
 
-                // 对于原文中超出识别文本长度的部分（即没有被识别文本覆盖到的），标记为 pending
-                // 但这里我们使用 LCS 的结果来判断：如果某个字符在识别文本中没有匹配，且其位置大于识别文本长度，则为 pending
-                // 更准确：如果 origStatus[idx] === 'wrong' 且 该字符在识别文本中没有对应的匹配，且 idx >= n，则为 pending
-                // 但 LCS 已经给出了匹配结果，我们只需要将未匹配且位置在识别文本长度之后的标记为 pending
-                // 注意：n 是识别文本的长度，如果 idx >= n，说明识别文本还没有覆盖到这个位置
+                // 未匹配且超出识别长度的原文标记为 pending
                 for (let idx = 0; idx < m; idx++) {
                     if (origStatus[idx] === 'wrong' && idx >= n) {
                         origStatus[idx] = 'pending';
                     }
                 }
-
-                // 对于识别文本中多余的字符（即未匹配且位置在原文长度之后的），标记为 'extra'，但我们可以保留为 'wrong'
-                // 这里我们不做特殊处理，统一为 'wrong'
 
                 return { origStatus, recogStatus };
             }
@@ -824,11 +841,9 @@
 
                 for (let idx = 0; idx < chars.length; idx++) {
                     const ch = chars[idx];
-                    // 判断是否为文字字符（与提取规则一致）
                     const isTextChar = /[\u4e00-\u9fa5a-zA-Z0-9]/.test(ch);
 
                     if (isTextChar) {
-                        // 从 origStatus 中获取状态
                         const status = (origStatus && cleanIdx < origStatus.length) ? origStatus[cleanIdx] : 'pending';
                         let cls = 'char-highlight ';
                         if (status === 'correct') cls += 'char-correct';
@@ -837,7 +852,6 @@
                         html += `<span class="${cls}">${ch}</span>`;
                         cleanIdx++;
                     } else {
-                        // 标点、空格等，不参与对比
                         html += `<span class="char-skip">${ch}</span>`;
                     }
                 }
@@ -846,8 +860,8 @@
                 sourceCharCount.textContent = original.length + ' 字';
             }
 
-            // ---------- 渲染识别结果 ----------
-            function renderRecognition(text, interim) {
+            // ---------- 渲染识别结果（带错误标记） ----------
+            function renderRecognition(text, interim, recogStatus) {
                 const fullText = text + (interim || '');
                 if (!fullText.trim()) {
                     recogDisplay.innerHTML = '<span class="empty-placeholder">开始背诵后，这里会显示识别结果…</span>';
@@ -855,14 +869,33 @@
                     return;
                 }
 
-                // 将最终文本和临时文本分开显示
+                // 拆分文本为字符数组
+                const chars = fullText.split('');
+                let cleanIdx = 0;
                 let html = '';
-                if (text) {
-                    html += `<span class="final">${escapeHtml(text)}</span>`;
+
+                for (let idx = 0; idx < chars.length; idx++) {
+                    const ch = chars[idx];
+                    const isTextChar = /[\u4e00-\u9fa5a-zA-Z0-9]/.test(ch);
+
+                    if (isTextChar) {
+                        // 根据 recogStatus 标记
+                        let status = 'pending'; // 默认
+                        if (recogStatus && cleanIdx < recogStatus.length) {
+                            status = recogStatus[cleanIdx];
+                        }
+                        let cls = 'char-highlight ';
+                        if (status === 'correct') cls += 'char-correct';
+                        else if (status === 'wrong') cls += 'char-wrong';
+                        else cls += 'char-pending';
+                        html += `<span class="${cls}">${ch}</span>`;
+                        cleanIdx++;
+                    } else {
+                        // 标点、空格保持原样
+                        html += `<span class="char-skip">${ch}</span>`;
+                    }
                 }
-                if (interim) {
-                    html += `<span class="interim">${escapeHtml(interim)}</span>`;
-                }
+
                 recogDisplay.innerHTML = html;
                 recogCharCount.textContent = fullText.length + ' 字';
             }
@@ -910,6 +943,7 @@
                 const recog = recognizedText;
 
                 if (!orig) {
+                    // 无原文时显示空白
                     sourceDisplay.innerHTML = '<span class="empty-placeholder">请载入原文…</span>';
                     recogDisplay.innerHTML = '<span class="empty-placeholder">开始背诵后，这里会显示识别结果…</span>';
                     sourceCharCount.textContent = '0 字';
@@ -925,17 +959,27 @@
                 const cleanOrig = extractTextContent(orig);
                 const cleanRecog = extractTextContent(recog);
 
-                // LCS 对比
                 const { origStatus, recogStatus } = compareWithLCS(cleanOrig, cleanRecog);
 
-                // 渲染原文
+                // 渲染原文（即使隐藏，也更新内容以便后续显示）
                 renderSource(orig, cleanOrig, origStatus);
 
-                // 渲染识别结果
-                renderRecognition(recognizedText, isListening ? interimTranscript : '');
+                // 渲染识别结果（带标记）
+                renderRecognition(recognizedText, isListening ? interimTranscript : '', recogStatus);
 
                 // 更新统计
                 updateStats(origStatus);
+            }
+
+            // ---------- 隐藏 / 显示原文面板 ----------
+            function hideOriginalPanel() {
+                panelOriginal.classList.add('hidden');
+                displaySection.classList.add('single-col');
+            }
+
+            function showOriginalPanel() {
+                panelOriginal.classList.remove('hidden');
+                displaySection.classList.remove('single-col');
             }
 
             // ---------- 语音识别 ----------
@@ -966,14 +1010,15 @@
                         showToast('❌ 请允许使用麦克风权限后重试。', 3500);
                         stopListening();
                     } else if (event.error === 'no-speech') {
-                        // 静默处理，不打断
+                        // 静默处理
                     } else if (event.error === 'audio-capture') {
                         showToast('❌ 无法访问麦克风，请检查设备。', 3000);
                         stopListening();
+                    } else if (event.error === 'network') {
+                        showToast('⚠️ 网络连接失败，请检查网络或代理后重试。', 4000);
+                        stopListening();
                     } else {
-                        // 其他错误，尝试恢复
                         if (isListening) {
-                            // 某些错误后识别会停止，自动重启
                             try {
                                 rec.stop();
                             } catch (_) {}
@@ -990,11 +1035,9 @@
 
                 rec.onend = function() {
                     if (isListening) {
-                        // 如果还在监听状态，但识别结束了，自动重启
                         try {
                             rec.start();
                         } catch (_) {
-                            // 可能已经被停止
                             if (isListening) {
                                 updateStatus('idle', '⏸ 识别已暂停');
                             }
@@ -1025,7 +1068,6 @@
                     }
                     interimTranscript = interim;
 
-                    // 执行对比
                     performComparison();
                 };
 
@@ -1051,12 +1093,10 @@
                 finalTranscript = '';
                 interimTranscript = '';
                 recognizedText = '';
-                // 重置识别文本
                 recognizedText = '';
                 finalTranscript = '';
                 interimTranscript = '';
 
-                // 清空识别显示
                 recogDisplay.innerHTML = '<span class="empty-placeholder">🎤 正在聆听…</span>';
 
                 try {
@@ -1078,7 +1118,6 @@
                 btnStart.disabled = false;
                 btnStop.disabled = true;
                 btnSetText.disabled = false;
-                // 如果有临时文本，将其合并到最终文本
                 if (interimTranscript) {
                     finalTranscript += interimTranscript;
                     recognizedText = finalTranscript;
@@ -1094,15 +1133,14 @@
                 finalTranscript = '';
                 interimTranscript = '';
                 recognizedText = '';
-                // 不清除原文，只清除识别结果
-                renderRecognition('', '');
-                // 重新对比，显示原文但无识别结果
+                renderRecognition('', '', []);
                 performComparison();
                 updateStatus('idle', '等待开始');
                 btnStart.disabled = false;
                 btnStop.disabled = true;
                 btnSetText.disabled = false;
                 showToast('🔄 已重置', 1200);
+                // 重置不改变原文隐藏状态
             }
 
             function updateStatus(type, text) {
@@ -1117,18 +1155,18 @@
                     showToast('⚠️ 请先输入或粘贴原文内容。', 2000);
                     return;
                 }
-                // 如果正在监听，先停止
                 if (isListening) {
                     stopListening();
                 }
                 originalText = text;
-                // 重置识别结果
                 finalTranscript = '';
                 interimTranscript = '';
                 recognizedText = '';
                 performComparison();
-                updateStatus('idle', '✅ 原文已载入');
-                showToast('📥 原文载入成功！', 1200);
+                // 载入后隐藏原文面板
+                hideOriginalPanel();
+                updateStatus('idle', '✅ 原文已载入（已隐藏）');
+                showToast('📥 原文载入成功！原文已隐藏，请开始背诵。', 2000);
             }
 
             function clearSource() {
@@ -1139,6 +1177,8 @@
                 interimTranscript = '';
                 recognizedText = '';
                 performComparison();
+                // 清空后显示原文面板（因为原文被清空）
+                showOriginalPanel();
                 updateStatus('idle', '等待开始');
                 showToast('🗑️ 已清空', 1000);
             }
@@ -1147,7 +1187,7 @@
             function initSample() {
                 const sample = '床前明月光，疑是地上霜。举头望明月，低头思故乡。';
                 sourceText.value = sample;
-                loadSource();
+                loadSource(); // 会载入并隐藏原文
             }
 
             // ---------- 事件绑定 ----------
@@ -1157,7 +1197,6 @@
             btnStop.addEventListener('click', stopListening);
             btnReset.addEventListener('click', resetAll);
 
-            // 快捷键：Ctrl+Enter 载入原文
             sourceText.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault();
@@ -1166,16 +1205,13 @@
             });
 
             // ---------- 启动 ----------
-            // 默认载入示例
             initSample();
 
-            // 如果浏览器不支持语音识别，给出提示
             if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
                 showToast('⚠️ 当前浏览器不支持语音识别，请使用 Chrome 或 Edge。', 4000);
                 btnStart.disabled = true;
             }
 
-            // 暴露一些变量给控制台调试（可选）
             window.__echo = {
                 originalText,
                 recognizedText,
@@ -1185,11 +1221,13 @@
                 resetAll,
                 startListening,
                 stopListening,
-                performComparison
+                performComparison,
+                hideOriginalPanel,
+                showOriginalPanel
             };
 
             console.log('🎧 回声 Echo 已加载！');
-            console.log('💡 提示: 输入原文后点击 "载入"，然后点击 "开始背书" 进行语音背诵。');
+            console.log('💡 提示: 输入原文后点击 "载入"，原文将自动隐藏，只显示识别结果。');
 
         })();
     </script>
