@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>回声 Echo · AI智能背书系统</title>
+    <style>
+        /* ===== 全局重置 & 字体 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(145deg, #f7f3f0 0%, #e8e0da 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* ===== 主容器 ===== */
+        .app {
+            max-width: 960px;
+            width: 100%;
+            background: rgba(255, 252, 249, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 36px 40px 44px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 248, 240, 0.5);
+            transition: all 0.2s;
+        }
+
+        /* ===== 头部 ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .logo-icon {
+            font-size: 38px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(180, 120, 80, 0.2));
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #4a2c1a, #7a4f2e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .brand .sub {
+            font-size: 14px;
+            color: #9a7b64;
+            letter-spacing: 4px;
+            font-weight: 400;
+            margin-top: -2px;
+        }
+
+        .header .badge {
+            margin-left: auto;
+            background: #dacbc0;
+            color: #4d3425;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 18px;
+            border-radius: 40px;
+            letter-spacing: 1px;
+            background: rgba(180, 140, 110, 0.18);
+            border: 1px solid rgba(180, 140, 110, 0.20);
+            backdrop-filter: blur(4px);
+        }
+
+        /* ===== 输入区 ===== */
+        .input-section {
+            background: #fcf9f6;
+            border-radius: 24px;
+            padding: 18px 22px 22px;
+            margin-bottom: 24px;
+            border: 1px solid #ede7e1;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .input-section label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #5d4037;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .input-section label .hint {
+            font-weight: 400;
+            font-size: 12px;
+            color: #a48d7c;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .input-row textarea {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px solid #ddd2c8;
+            background: #fffdfb;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #3d2c1f;
+            resize: vertical;
+            min-height: 80px;
+            max-height: 200px;
+            font-family: inherit;
+            transition: border 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .input-row textarea:focus {
+            border-color: #b58d74;
+            box-shadow: 0 0 0 3px rgba(181, 141, 116, 0.15);
+        }
+
+        .input-row textarea::placeholder {
+            color: #b9a99b;
+            font-weight: 300;
+        }
+
+        .input-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 26px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #ede7e1;
+            color: #4d3425;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: #6d4c3a;
+            color: #fef8f3;
+        }
+        .btn-primary:hover {
+            background: #5d3f2f;
+        }
+
+        .btn-success {
+            background: #3a7a5c;
+            color: #fef8f3;
+        }
+        .btn-success:hover {
+            background: #2d664b;
+        }
+
+        .btn-danger {
+            background: #b35c4a;
+            color: #fef8f3;
+        }
+        .btn-danger:hover {
+            background: #9e4d3d;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #d2c2b6;
+        }
+        .btn-outline:hover {
+            background: #f0e8e2;
+            border-color: #b59884;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* ===== 控制栏 ===== */
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px 20px;
+            padding: 14px 0 18px;
+            border-bottom: 1px solid #ede7e1;
+            margin-bottom: 22px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #5d4037;
+            margin-left: auto;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #b9a99b;
+            flex-shrink: 0;
+            transition: background 0.3s;
+        }
+
+        .status-dot.idle {
+            background: #b9a99b;
+        }
+        .status-dot.listening {
+            background: #e67e22;
+            animation: pulse-dot 1s ease-in-out infinite;
+        }
+        .status-dot.done {
+            background: #2ecc71;
+        }
+        .status-dot.error {
+            background: #e74c3c;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.4);
+                opacity: 0.6;
+            }
+        }
+
+        .status-text {
+            font-weight: 500;
+        }
+
+        /* ===== 对比显示区 ===== */
+        .display-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 700px) {
+            .display-section {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+            .app {
+                padding: 24px 18px 28px;
+            }
+            .control-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .status-badge {
+                margin-left: 0;
+                justify-content: center;
+            }
+            .input-row {
+                flex-direction: column;
+            }
+            .input-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
+
+        .panel {
+            background: #fcf9f6;
+            border-radius: 20px;
+            padding: 18px 20px 20px;
+            border: 1px solid #ede7e1;
+            min-height: 180px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8a7363;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title .count {
+            font-weight: 400;
+            font-size: 12px;
+            color: #b9a99b;
+            margin-left: auto;
+        }
+
+        .panel-content {
+            font-size: 16px;
+            line-height: 1.9;
+            color: #3d2c1f;
+            word-break: break-all;
+            white-space: pre-wrap;
+            min-height: 100px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .panel-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .panel-content::-webkit-scrollbar-track {
+            background: #f0ebe6;
+            border-radius: 10px;
+        }
+        .panel-content::-webkit-scrollbar-thumb {
+            background: #d5c4b8;
+            border-radius: 10px;
+        }
+
+        /* ===== 原文标记颜色 ===== */
+        .char-correct {
+            color: #1f8b4c;
+            background: rgba(31, 139, 76, 0.10);
+            border-radius: 3px;
+            padding: 0 1px;
+        }
+
+        .char-wrong {
+            color: #c0392b;
+            background: rgba(192, 57, 43, 0.14);
+            border-radius: 3px;
+            padding: 0 1px;
+            text-decoration: underline wavy #c0392b 1.5px;
+            text-underline-offset: 3px;
+        }
+
+        .char-pending {
+            color: #b0a094;
+            background: rgba(176, 160, 148, 0.10);
+            border-radius: 3px;
+            padding: 0 1px;
+        }
+
+        .char-skip {
+            color: #8a7a6b;
+            opacity: 0.7;
+        }
+
+        .char-highlight {
+            transition: background 0.15s;
+        }
+
+        /* ===== 识别结果 ===== */
+        .recognition-text {
+            color: #3d2c1f;
+        }
+
+        .recognition-text .interim {
+            color: #b0a094;
+            font-style: italic;
+        }
+
+        .recognition-text .final {
+            color: #3d2c1f;
+        }
+
+        .empty-placeholder {
+            color: #c9bbb0;
+            font-style: italic;
+            font-weight: 300;
+            font-size: 15px;
+            user-select: none;
+        }
+
+        /* ===== 统计栏 ===== */
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 24px 40px;
+            padding-top: 18px;
+            border-top: 1px solid #ede7e1;
+            margin-top: 4px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 14px;
+            color: #6d5a4b;
+        }
+
+        .stat-item .num {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3d2c1f;
+            letter-spacing: 0.5px;
+            min-width: 40px;
+        }
+
+        .stat-item .num.green {
+            color: #1f8b4c;
+        }
+        .stat-item .num.red {
+            color: #c0392b;
+        }
+        .stat-item .num.orange {
+            color: #d4883a;
+        }
+
+        .stat-item .label {
+            font-weight: 400;
+            color: #9a8474;
+            font-size: 13px;
+        }
+
+        .progress-bar-wrap {
+            flex: 1;
+            min-width: 120px;
+            height: 6px;
+            background: #e8dfd8;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 0 4px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #b58d74, #6d4c3a);
+            border-radius: 20px;
+            transition: width 0.25s ease;
+        }
+
+        .stat-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        /* ===== 底部 ===== */
+        .footer {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 12px;
+            color: #c5b6a8;
+            letter-spacing: 1px;
+            border-top: 1px solid #f0eae4;
+            padding-top: 22px;
+        }
+
+        .footer a {
+            color: #b59884;
+            text-decoration: none;
+        }
+
+        /* ===== 滚动条全局 ===== */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0ebe6;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d5c4b8;
+            border-radius: 10px;
+        }
+
+        /* ===== 工具类 ===== */
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .text-muted {
+            color: #b0a094;
+            font-size: 13px;
+        }
+
+        /* toast 提示 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #3d2c1f;
+            color: #fef8f3;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.20);
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Toast 提示 ===== -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ===== 主应用 ===== -->
+    <div class="app" id="app">
+
+        <!-- 头部 -->
+        <header class="header">
+            <span class="logo-icon">🎧</span>
+            <div class="brand">
+                <h1>回声 Echo</h1>
+                <span class="sub">AI 智能背书系统</span>
+            </div>
+            <span class="badge">🎯 实时语音对比</span>
+        </header>
+
+        <!-- 输入区 -->
+        <section class="input-section">
+            <label>
+                📄 背诵原文
+                <span class="hint">— 粘贴或输入你要背诵的内容</span>
+            </label>
+            <div class="input-row">
+                <textarea id="sourceText" placeholder="请在此输入或粘贴需要背诵的文章…&#10;例如：床前明月光，疑是地上霜。举头望明月，低头思故乡。">床前明月光，疑是地上霜。举头望明月，低头思故乡。</textarea>
+                <div class="input-actions">
+                    <button class="btn btn-primary" id="btnSetText">📥 载入</button>
+                    <button class="btn btn-outline" id="btnClearText">清空</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 控制栏 -->
+        <div class="control-bar">
+            <div class="control-buttons">
+                <button class="btn btn-success" id="btnStart">🎤 开始背书</button>
+                <button class="btn btn-danger" id="btnStop" disabled>⏹ 停止</button>
+                <button class="btn btn-outline" id="btnReset">⟳ 重置</button>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot idle" id="statusDot"></span>
+                <span class="status-text" id="statusText">等待开始</span>
+            </div>
+        </div>
+
+        <!-- 显示区 -->
+        <div class="display-section">
+            <!-- 原文对照 -->
+            <div class="panel">
+                <div class="panel-title">
+                    📖 原文对照
+                    <span class="count" id="sourceCharCount">0 字</span>
+                </div>
+                <div class="panel-content" id="sourceDisplay">
+                    <span class="empty-placeholder">请载入原文…</span>
+                </div>
+            </div>
+            <!-- 识别结果 -->
+            <div class="panel">
+                <div class="panel-title">
+                    🗣️ 你的背诵
+                    <span class="count" id="recogCharCount">0 字</span>
+                </div>
+                <div class="panel-content" id="recogDisplay">
+                    <span class="empty-placeholder">开始背诵后，这里会显示识别结果…</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="stats">
+            <div class="stat-item">
+                <span class="num green" id="statCorrect">0</span>
+                <span class="label">正确</span>
+            </div>
+            <div class="stat-item">
+                <span class="num red" id="statWrong">0</span>
+                <span class="label">错误</span>
+            </div>
+            <div class="stat-item">
+                <span class="num orange" id="statPending">0</span>
+                <span class="label">待背</span>
+            </div>
+            <div class="stat-progress">
+                <span class="label" style="font-size:13px;">进度</span>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+                <span class="label" id="progressLabel" style="min-width:44px;text-align:right;">0%</span>
+            </div>
+        </div>
+
+        <footer class="footer">
+            🎧 回声 Echo · 用声音记住每一段文字 &nbsp;·&nbsp; 基于 Web Speech API
+        </footer>
+    </div>
+
+    <script>
+        // ================================================================
+        //  📦  回声 Echo  ·  AI 智能背书系统
+        //  技术：Web Speech API + LCS 文本对比 + 实时高亮
+        // ================================================================
+
+        (function() {
+            'use strict';
+
+            // ---------- DOM 引用 ----------
+            const sourceText = document.getElementById('sourceText');
+            const btnSetText = document.getElementById('btnSetText');
+            const btnClearText = document.getElementById('btnClearText');
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+            const btnReset = document.getElementById('btnReset');
+            const sourceDisplay = document.getElementById('sourceDisplay');
+            const recogDisplay = document.getElementById('recogDisplay');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const statCorrect = document.getElementById('statCorrect');
+            const statWrong = document.getElementById('statWrong');
+            const statPending = document.getElementById('statPending');
+            const progressFill = document.getElementById('progressFill');
+            const progressLabel = document.getElementById('progressLabel');
+            const sourceCharCount = document.getElementById('sourceCharCount');
+            const recogCharCount = document.getElementById('recogCharCount');
+            const toast = document.getElementById('toast');
+
+            // ---------- 状态 ----------
+            let originalText = ''; // 原文（完整，含标点）
+            let cleanOriginal = ''; // 原文（仅文字，去标点空格）
+            let recognizedText = ''; // 识别结果（累积，含标点）
+            let cleanRecognized = ''; // 识别结果（仅文字，去标点空格）
+            let isListening = false;
+            let recognition = null;
+            let finalTranscript = ''; // 已确认的识别文本
+            let interimTranscript = ''; // 临时识别文本
+
+            // ---------- 工具函数 ----------
+            // 提取文字内容（去除标点符号和空格）
+            function extractTextContent(text) {
+                if (!text) return '';
+                // 保留汉字、字母、数字，移除标点、空格、换行等
+                return text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+            }
+
+            // 显示 Toast 提示
+            function showToast(msg, duration = 2200) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            // ---------- LCS 对比算法 ----------
+            // 返回一个数组，表示 cleanOriginal 中每个字符的匹配状态
+            // 状态: 'correct' | 'wrong' | 'pending'
+            // 同时返回识别文本中每个字符的匹配状态（用于显示）
+            function compareWithLCS(orig, recog) {
+                const m = orig.length;
+                const n = recog.length;
+
+                if (m === 0) {
+                    return { origStatus: [], recogStatus: [] };
+                }
+                if (n === 0) {
+                    return {
+                        origStatus: orig.split('').map(() => 'pending'),
+                        recogStatus: []
+                    };
+                }
+
+                // 构建 LCS 矩阵
+                const dp = Array(m + 1);
+                for (let i = 0; i <= m; i++) {
+                    dp[i] = Array(n + 1).fill(0);
+                }
+
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        if (orig[i - 1] === recog[j - 1]) {
+                            dp[i][j] = dp[i - 1][j - 1] + 1;
+                        } else {
+                            dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                        }
+                    }
+                }
+
+                // 回溯找出匹配的字符
+                const origMatched = Array(m).fill(false);
+                const recogMatched = Array(n).fill(false);
+                let i = m,
+                    j = n;
+                while (i > 0 && j > 0) {
+                    if (orig[i - 1] === recog[j - 1]) {
+                        origMatched[i - 1] = true;
+                        recogMatched[j - 1] = true;
+                        i--;
+                        j--;
+                    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+                        i--;
+                    } else {
+                        j--;
+                    }
+                }
+
+                // 生成状态数组
+                // origStatus: 'correct' | 'wrong' | 'pending'
+                // pending 表示识别文本还未覆盖到（即 j 位置还没有对应的识别字符）
+                const origStatus = Array(m).fill('wrong');
+                const recogStatus = Array(n).fill('wrong');
+
+                // 标记匹配的
+                for (let idx = 0; idx < m; idx++) {
+                    if (origMatched[idx]) {
+                        origStatus[idx] = 'correct';
+                    }
+                }
+                for (let idx = 0; idx < n; idx++) {
+                    if (recogMatched[idx]) {
+                        recogStatus[idx] = 'correct';
+                    }
+                }
+
+                // 对于原文中超出识别文本长度的部分（即没有被识别文本覆盖到的），标记为 pending
+                // 但这里我们使用 LCS 的结果来判断：如果某个字符在识别文本中没有匹配，且其位置大于识别文本长度，则为 pending
+                // 更准确：如果 origStatus[idx] === 'wrong' 且 该字符在识别文本中没有对应的匹配，且 idx >= n，则为 pending
+                // 但 LCS 已经给出了匹配结果，我们只需要将未匹配且位置在识别文本长度之后的标记为 pending
+                // 注意：n 是识别文本的长度，如果 idx >= n，说明识别文本还没有覆盖到这个位置
+                for (let idx = 0; idx < m; idx++) {
+                    if (origStatus[idx] === 'wrong' && idx >= n) {
+                        origStatus[idx] = 'pending';
+                    }
+                }
+
+                // 对于识别文本中多余的字符（即未匹配且位置在原文长度之后的），标记为 'extra'，但我们可以保留为 'wrong'
+                // 这里我们不做特殊处理，统一为 'wrong'
+
+                return { origStatus, recogStatus };
+            }
+
+            // ---------- 渲染原文（带颜色标记） ----------
+            function renderSource(original, cleanOrig, origStatus) {
+                if (!original) {
+                    sourceDisplay.innerHTML = '<span class="empty-placeholder">请载入原文…</span>';
+                    sourceCharCount.textContent = '0 字';
+                    return;
+                }
+
+                const chars = original.split('');
+                let cleanIdx = 0;
+                let html = '';
+
+                for (let idx = 0; idx < chars.length; idx++) {
+                    const ch = chars[idx];
+                    // 判断是否为文字字符（与提取规则一致）
+                    const isTextChar = /[\u4e00-\u9fa5a-zA-Z0-9]/.test(ch);
+
+                    if (isTextChar) {
+                        // 从 origStatus 中获取状态
+                        const status = (origStatus && cleanIdx < origStatus.length) ? origStatus[cleanIdx] : 'pending';
+                        let cls = 'char-highlight ';
+                        if (status === 'correct') cls += 'char-correct';
+                        else if (status === 'wrong') cls += 'char-wrong';
+                        else cls += 'char-pending';
+                        html += `<span class="${cls}">${ch}</span>`;
+                        cleanIdx++;
+                    } else {
+                        // 标点、空格等，不参与对比
+                        html += `<span class="char-skip">${ch}</span>`;
+                    }
+                }
+
+                sourceDisplay.innerHTML = html;
+                sourceCharCount.textContent = original.length + ' 字';
+            }
+
+            // ---------- 渲染识别结果 ----------
+            function renderRecognition(text, interim) {
+                const fullText = text + (interim || '');
+                if (!fullText.trim()) {
+                    recogDisplay.innerHTML = '<span class="empty-placeholder">开始背诵后，这里会显示识别结果…</span>';
+                    recogCharCount.textContent = '0 字';
+                    return;
+                }
+
+                // 将最终文本和临时文本分开显示
+                let html = '';
+                if (text) {
+                    html += `<span class="final">${escapeHtml(text)}</span>`;
+                }
+                if (interim) {
+                    html += `<span class="interim">${escapeHtml(interim)}</span>`;
+                }
+                recogDisplay.innerHTML = html;
+                recogCharCount.textContent = fullText.length + ' 字';
+            }
+
+            // 简单的转义（防止 XSS）
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ---------- 更新统计和进度 ----------
+            function updateStats(origStatus) {
+                if (!origStatus || origStatus.length === 0) {
+                    statCorrect.textContent = '0';
+                    statWrong.textContent = '0';
+                    statPending.textContent = '0';
+                    progressFill.style.width = '0%';
+                    progressLabel.textContent = '0%';
+                    return;
+                }
+
+                let correct = 0,
+                    wrong = 0,
+                    pending = 0;
+                for (const s of origStatus) {
+                    if (s === 'correct') correct++;
+                    else if (s === 'wrong') wrong++;
+                    else if (s === 'pending') pending++;
+                }
+
+                const total = origStatus.length;
+                const progress = total > 0 ? Math.round(((correct + wrong) / total) * 100) : 0;
+
+                statCorrect.textContent = correct;
+                statWrong.textContent = wrong;
+                statPending.textContent = pending;
+                progressFill.style.width = progress + '%';
+                progressLabel.textContent = progress + '%';
+            }
+
+            // ---------- 核心：执行对比并更新 UI ----------
+            function performComparison() {
+                const orig = originalText;
+                const recog = recognizedText;
+
+                if (!orig) {
+                    sourceDisplay.innerHTML = '<span class="empty-placeholder">请载入原文…</span>';
+                    recogDisplay.innerHTML = '<span class="empty-placeholder">开始背诵后，这里会显示识别结果…</span>';
+                    sourceCharCount.textContent = '0 字';
+                    recogCharCount.textContent = '0 字';
+                    statCorrect.textContent = '0';
+                    statWrong.textContent = '0';
+                    statPending.textContent = '0';
+                    progressFill.style.width = '0%';
+                    progressLabel.textContent = '0%';
+                    return;
+                }
+
+                const cleanOrig = extractTextContent(orig);
+                const cleanRecog = extractTextContent(recog);
+
+                // LCS 对比
+                const { origStatus, recogStatus } = compareWithLCS(cleanOrig, cleanRecog);
+
+                // 渲染原文
+                renderSource(orig, cleanOrig, origStatus);
+
+                // 渲染识别结果
+                renderRecognition(recognizedText, isListening ? interimTranscript : '');
+
+                // 更新统计
+                updateStats(origStatus);
+            }
+
+            // ---------- 语音识别 ----------
+            function initRecognition() {
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SR) {
+                    showToast('❌ 您的浏览器不支持语音识别，请使用 Chrome 或 Edge。', 4000);
+                    return null;
+                }
+
+                const rec = new SR();
+                rec.lang = 'zh-CN';
+                rec.continuous = true;
+                rec.interimResults = true;
+                rec.maxAlternatives = 1;
+
+                rec.onstart = function() {
+                    isListening = true;
+                    updateStatus('listening', '🎤 正在听你背诵…');
+                    btnStart.disabled = true;
+                    btnStop.disabled = false;
+                    btnSetText.disabled = true;
+                };
+
+                rec.onerror = function(event) {
+                    console.warn('语音识别错误:', event.error);
+                    if (event.error === 'not-allowed') {
+                        showToast('❌ 请允许使用麦克风权限后重试。', 3500);
+                        stopListening();
+                    } else if (event.error === 'no-speech') {
+                        // 静默处理，不打断
+                    } else if (event.error === 'audio-capture') {
+                        showToast('❌ 无法访问麦克风，请检查设备。', 3000);
+                        stopListening();
+                    } else {
+                        // 其他错误，尝试恢复
+                        if (isListening) {
+                            // 某些错误后识别会停止，自动重启
+                            try {
+                                rec.stop();
+                            } catch (_) {}
+                            setTimeout(() => {
+                                if (isListening) {
+                                    try {
+                                        rec.start();
+                                    } catch (_) {}
+                                }
+                            }, 300);
+                        }
+                    }
+                };
+
+                rec.onend = function() {
+                    if (isListening) {
+                        // 如果还在监听状态，但识别结束了，自动重启
+                        try {
+                            rec.start();
+                        } catch (_) {
+                            // 可能已经被停止
+                            if (isListening) {
+                                updateStatus('idle', '⏸ 识别已暂停');
+                            }
+                        }
+                    } else {
+                        updateStatus('idle', '⏸ 已停止');
+                    }
+                };
+
+                rec.onresult = function(event) {
+                    let final = '';
+                    let interim = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const result = event.results[i];
+                        const transcript = result[0].transcript;
+                        if (result.isFinal) {
+                            final += transcript;
+                        } else {
+                            interim += transcript;
+                        }
+                    }
+
+                    if (final) {
+                        finalTranscript += final;
+                        recognizedText = finalTranscript + interim;
+                    } else {
+                        recognizedText = finalTranscript + interim;
+                    }
+                    interimTranscript = interim;
+
+                    // 执行对比
+                    performComparison();
+                };
+
+                return rec;
+            }
+
+            // ---------- 控制函数 ----------
+            function startListening() {
+                if (!originalText.trim()) {
+                    showToast('⚠️ 请先载入要背诵的原文！', 2500);
+                    return;
+                }
+
+                if (recognition) {
+                    try {
+                        recognition.stop();
+                    } catch (_) {}
+                }
+
+                recognition = initRecognition();
+                if (!recognition) return;
+
+                finalTranscript = '';
+                interimTranscript = '';
+                recognizedText = '';
+                // 重置识别文本
+                recognizedText = '';
+                finalTranscript = '';
+                interimTranscript = '';
+
+                // 清空识别显示
+                recogDisplay.innerHTML = '<span class="empty-placeholder">🎤 正在聆听…</span>';
+
+                try {
+                    recognition.start();
+                } catch (e) {
+                    showToast('⚠️ 启动语音识别失败，请重试。', 2500);
+                    console.error(e);
+                }
+            }
+
+            function stopListening() {
+                isListening = false;
+                if (recognition) {
+                    try {
+                        recognition.stop();
+                    } catch (_) {}
+                    recognition = null;
+                }
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                btnSetText.disabled = false;
+                // 如果有临时文本，将其合并到最终文本
+                if (interimTranscript) {
+                    finalTranscript += interimTranscript;
+                    recognizedText = finalTranscript;
+                    interimTranscript = '';
+                    performComparison();
+                }
+                updateStatus('idle', '⏸ 已停止');
+                showToast('✅ 背诵已停止', 1500);
+            }
+
+            function resetAll() {
+                stopListening();
+                finalTranscript = '';
+                interimTranscript = '';
+                recognizedText = '';
+                // 不清除原文，只清除识别结果
+                renderRecognition('', '');
+                // 重新对比，显示原文但无识别结果
+                performComparison();
+                updateStatus('idle', '等待开始');
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                btnSetText.disabled = false;
+                showToast('🔄 已重置', 1200);
+            }
+
+            function updateStatus(type, text) {
+                statusDot.className = 'status-dot ' + type;
+                statusText.textContent = text;
+            }
+
+            // ---------- 载入原文 ----------
+            function loadSource() {
+                const text = sourceText.value;
+                if (!text.trim()) {
+                    showToast('⚠️ 请先输入或粘贴原文内容。', 2000);
+                    return;
+                }
+                // 如果正在监听，先停止
+                if (isListening) {
+                    stopListening();
+                }
+                originalText = text;
+                // 重置识别结果
+                finalTranscript = '';
+                interimTranscript = '';
+                recognizedText = '';
+                performComparison();
+                updateStatus('idle', '✅ 原文已载入');
+                showToast('📥 原文载入成功！', 1200);
+            }
+
+            function clearSource() {
+                if (isListening) stopListening();
+                sourceText.value = '';
+                originalText = '';
+                finalTranscript = '';
+                interimTranscript = '';
+                recognizedText = '';
+                performComparison();
+                updateStatus('idle', '等待开始');
+                showToast('🗑️ 已清空', 1000);
+            }
+
+            // ---------- 初始化示例 ----------
+            function initSample() {
+                const sample = '床前明月光，疑是地上霜。举头望明月，低头思故乡。';
+                sourceText.value = sample;
+                loadSource();
+            }
+
+            // ---------- 事件绑定 ----------
+            btnSetText.addEventListener('click', loadSource);
+            btnClearText.addEventListener('click', clearSource);
+            btnStart.addEventListener('click', startListening);
+            btnStop.addEventListener('click', stopListening);
+            btnReset.addEventListener('click', resetAll);
+
+            // 快捷键：Ctrl+Enter 载入原文
+            sourceText.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    loadSource();
+                }
+            });
+
+            // ---------- 启动 ----------
+            // 默认载入示例
+            initSample();
+
+            // 如果浏览器不支持语音识别，给出提示
+            if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+                showToast('⚠️ 当前浏览器不支持语音识别，请使用 Chrome 或 Edge。', 4000);
+                btnStart.disabled = true;
+            }
+
+            // 暴露一些变量给控制台调试（可选）
+            window.__echo = {
+                originalText,
+                recognizedText,
+                finalTranscript,
+                interimTranscript,
+                loadSource,
+                resetAll,
+                startListening,
+                stopListening,
+                performComparison
+            };
+
+            console.log('🎧 回声 Echo 已加载！');
+            console.log('💡 提示: 输入原文后点击 "载入"，然后点击 "开始背书" 进行语音背诵。');
+
+        })();
+    </script>
+
+</body>
+</html>
