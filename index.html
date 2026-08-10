@@ -1302,6 +1302,100 @@
             font-weight: 500;
         }
 
+        /* ===== 计时器设置 ===== */
+        .echo-timer-set {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 4px 14px 4px 10px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        .echo-timer-set:hover {
+            border-color: #4f46e5;
+            background: #eef2ff;
+        }
+        .echo-timer-set label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .echo-timer-set input {
+            width: 56px;
+            padding: 6px 4px;
+            border-radius: 10px;
+            border: 1px solid #d1d9e6;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            background: white;
+            outline: none;
+            transition: 0.2s;
+            color: #2d3748;
+        }
+        .echo-timer-set input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+        .echo-timer-set input:disabled {
+            background: #eef2f6;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .echo-timer-set .unit {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 400;
+        }
+        .echo-timer-set .mode-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #dbeafe;
+            color: #2563eb;
+            margin-left: 2px;
+            white-space: nowrap;
+        }
+        .echo-timer-set .mode-badge.countdown {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        .echo-timer-set .mode-badge.timer {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* ===== 提示开关按钮 ===== */
+        .echo-hint-toggle {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #d1fae5;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .echo-hint-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .echo-hint-toggle.off {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         /* 评分栏 */
         .echo-score-section {
             display: flex;
@@ -1529,11 +1623,6 @@
         .char-highlight {
             transition: background 0.15s;
         }
-        .interim-char {
-            color: #a0aec0;
-            font-style: italic;
-            opacity: 0.8;
-        }
         .empty-placeholder {
             color: #a0aec0;
             font-style: italic;
@@ -1691,6 +1780,55 @@
             box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
         }
 
+        /* ===== 全屏提示遮罩 ===== */
+        .echo-fullscreen-hint {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2500;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .echo-fullscreen-hint.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .echo-fullscreen-hint .hint-content {
+            text-align: center;
+            color: white;
+            font-size: 72px;
+            font-weight: 700;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 30px;
+            max-width: 80%;
+        }
+        .echo-fullscreen-hint .hint-label {
+            font-size: 24px;
+            font-weight: 400;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 700px) {
+            .echo-fullscreen-hint .hint-content {
+                font-size: 40px;
+                padding: 20px;
+            }
+            .echo-fullscreen-hint .hint-label {
+                font-size: 18px;
+            }
+        }
+
         .echo-toast {
             position: fixed;
             bottom: 30px;
@@ -1756,6 +1894,9 @@
                 margin-left: 0;
                 justify-content: center;
             }
+            .echo-timer-set {
+                align-self: center;
+            }
             .echo-input-row {
                 flex-direction: column;
             }
@@ -1776,12 +1917,23 @@
             .echo-completion-score span {
                 font-size: 48px;
             }
+            .echo-hint-toggle {
+                align-self: center;
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="echoToast" class="echo-toast"></div>
+
+    <!-- 全屏提示遮罩 -->
+    <div id="echoFullscreenHint" class="echo-fullscreen-hint">
+        <div class="hint-content">
+            <div class="hint-label">💡 接下来请背</div>
+            <div id="echoFullscreenHintText"></div>
+        </div>
+    </div>
 
     <!-- AI 完成覆盖层 -->
     <div id="echoCompletionOverlay" class="echo-completion-overlay hidden">
@@ -1792,7 +1944,7 @@
                 <div class="ripple ripple-3"></div>
             </div>
             <div class="echo-completion-content">
-                <h2>🎉 恭喜完成背诵！</h2>
+                <h2 id="echoCompletionTitle">🎉 恭喜完成背诵！</h2>
                 <div class="echo-completion-score">得分 <span id="echoFinalScore">0</span></div>
                 <div class="echo-completion-grade">等级 <span id="echoFinalGrade">-</span></div>
                 <div class="echo-completion-stats">
@@ -1980,14 +2132,26 @@
                     </div>
                 </div>
 
-                <!-- 控制栏 -->
+                <!-- 控制栏（含计时器设置 + 提示开关） -->
                 <div class="echo-control-bar">
                     <div class="echo-control-buttons">
-                        <button class="btn-success" id="echoBtnStart">🎤 开始背书</button>
-                        <button class="btn-danger" id="echoBtnStop" disabled>⏹ 停止</button>
-                        <button class="btn-secondary" id="echoBtnReset">⟳ 重置</button>
-                        <button class="btn-secondary" id="echoBtnClearSource">📝 重输</button>
+                        <button class="btn-primary" id="echoBtnStart">🎤 开始背书</button>
+                        <button class="btn-primary" id="echoBtnStop" disabled>⏹ 停止</button>
+                        <button class="btn-info" id="echoBtnReset">⟳ 重置</button>
+                        <button class="btn-info" id="echoBtnClearSource">📝 重输</button>
                     </div>
+
+                    <!-- ===== 计时器设置 ===== -->
+                    <div class="echo-timer-set" id="echoTimerSet">
+                        <label>⏱️</label>
+                        <input type="number" id="echoTimeLimit" min="0" value="0" step="0.5" placeholder="0">
+                        <span class="unit">分钟</span>
+                        <span class="mode-badge timer" id="echoTimerModeBadge">正计时</span>
+                    </div>
+
+                    <!-- ===== 提示开关按钮 ===== -->
+                    <button class="echo-hint-toggle" id="echoToggleHintsBtn">💡 提示：开</button>
+
                     <div class="echo-status-badge">
                         <span class="echo-status-dot idle" id="echoStatusDot"></span>
                         <span class="echo-status-text" id="echoStatusText">等待开始</span>
@@ -2051,7 +2215,7 @@
 
     <script>
         // ================================================================
-        //  PART 1: 管理系统逻辑
+        //  PART 1: 管理系统逻辑 (保持不变，仅做必要的暴露)
         // ================================================================
         (function() {
             'use strict';
@@ -2284,7 +2448,6 @@
                     let remark = prompt("请输入备注文字", student.remark || "");
                     if (remark !== null) student.remark = remark.trim() || undefined;
                 } else if (action === 'toAI') {
-                    // 跳转到AI背书Tab并选中该学生
                     switchToAIWithStudent(student.num);
                     return;
                 } else {
@@ -2310,34 +2473,23 @@
                 updateEchoStudentSelect();
             }
 
-            // 切换到AI背书Tab并选中某个学生
             function switchToAIWithStudent(studentNum) {
-                // 设置标记，表示从管理跳转
                 window._fromManage = true;
-
-                // 切换到Echo Tab
                 const echoTab = document.querySelector('.app-tab[data-tab="echo"]');
                 if (echoTab) echoTab.click();
-
-                // 等待Tab切换完成后再设置下拉
                 setTimeout(() => {
                     const sel = document.getElementById('echoStudentSelect');
                     if (sel) {
-                        // 先确保下拉中有该学生
                         const mgr = window.__manage;
                         if (mgr) mgr.updateEchoStudentSelect();
                         setTimeout(() => {
-                            // 再次设置值
                             const opt = sel.querySelector(`option[value="${studentNum}"]`);
                             if (opt) {
                                 sel.value = studentNum;
-                                // 触发变更事件
                                 sel.dispatchEvent(new Event('change'));
-                                // 自动加载该学生的原文（如果有预设）
                                 const loadBtn = document.getElementById('echoLoadStudentBtn');
                                 if (loadBtn) loadBtn.click();
                             } else {
-                                // 如果找不到，重新刷新下拉
                                 mgr.updateEchoStudentSelect();
                                 setTimeout(() => {
                                     const opt2 = sel.querySelector(`option[value="${studentNum}"]`);
@@ -2424,7 +2576,6 @@
                 recordContent.innerHTML = html;
             }
 
-            // ---------- 管理操作 ----------
             function addClass() {
                 const className = prompt("请输入新班级名称：");
                 if (className && className.trim() && !classData[className.trim()]) {
@@ -2615,7 +2766,6 @@
                 }
             }
 
-            // ---------- 同步 ----------
             function generateSyncKey() {
                 if (Object.keys(classData).length === 0) {
                     alert('请先创建班级再生成同步密钥');
@@ -2704,7 +2854,6 @@
                 }
             }
 
-            // ---------- 随机抽取操作 ----------
             function doRandom() {
                 const noRecite = classData[currentClass]?.noRecite || [];
                 if (!noRecite.length) return alert('未背书列表为空');
@@ -2741,7 +2890,6 @@
                 renderRandomPanel();
                 renderDrawnList(); }
 
-            // ---------- 回声学生下拉 ----------
             function updateEchoStudentSelect() {
                 const sel = document.getElementById('echoStudentSelect');
                 if (!sel) return;
@@ -2771,7 +2919,6 @@
                 if (!sel.value && all.length) sel.value = all[0].num;
             }
 
-            // ---------- 事件绑定 ----------
             function attachManageEvents() {
                 document.querySelector('.file-upload-btn')?.addEventListener('click', (e) => { e.preventDefault();
                     excelFile.click(); });
@@ -2823,7 +2970,6 @@
                 confirmMergeSync.addEventListener("click", () => applySyncData('merge'));
             }
 
-            // 暴露给 Echo 模块
             window.__manage = {
                 classData: () => classData,
                 recordData: () => recordData,
@@ -2864,7 +3010,6 @@
                     }
                     return false;
                 },
-                // 新增：跳回管理Tab的方法
                 switchToManageTab: function() {
                     const manageTab = document.querySelector('.app-tab[data-tab="manage"]');
                     if (manageTab) manageTab.click();
@@ -2896,7 +3041,7 @@
             }
 
             // ================================================================
-            //  PART 2: AI 智能背书 (回声Echo)
+            //  PART 2: AI 智能背书 - 增加计时器 + 评分弹窗(>70分询问标记) + 提示开关 + 英语优化
             // ================================================================
             (function() {
                 'use strict';
@@ -2931,19 +3076,43 @@
                 const echoFinalWrong = document.getElementById('echoFinalWrong');
                 const echoFinalTime = document.getElementById('echoFinalTime');
                 const echoCloseCompletion = document.getElementById('echoCloseCompletion');
+                const echoCompletionTitle = document.getElementById('echoCompletionTitle');
                 const echoInputSection = document.getElementById('echoInputSection');
+                const echoFullscreenHint = document.getElementById('echoFullscreenHint');
+                const echoFullscreenHintText = document.getElementById('echoFullscreenHintText');
+
+                // ---- 计时器相关 ----
+                const echoTimeLimitInput = document.getElementById('echoTimeLimit');
+                const echoTimerModeBadge = document.getElementById('echoTimerModeBadge');
+
+                // ---- 提示开关 ----
+                const echoToggleHintsBtn = document.getElementById('echoToggleHintsBtn');
+                let echoHintsEnabled = true;
 
                 let originalText = '';
                 let finalTranscript = '';
                 let interimTranscript = '';
                 let isListening = false;
                 let recognition = null;
-                let lastRecogStatus = [];
+                let lastOrigStatus = [];
                 let startTime = 0;
                 let endTime = 0;
                 let isCompleted = false;
                 let completionTimer = null;
+                let hintTimer = null;
+                let nextHintText = '';
+                let lastHintShown = '';
+                let timerInterval = null;
+                let isManualStop = false;
+                let hasShownCompletion = false;
+                let restartTimerId = null;
 
+                // ---- 计时模式 ----
+                let timeLimitSeconds = 0;
+                let isCountdownMode = false;
+                let countdownStartValue = 0;
+
+                // ---- 辅助函数 ----
                 function extractTextContent(text) {
                     if (!text) return '';
                     return text.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
@@ -2959,12 +3128,93 @@
                 }
 
                 function formatTime(seconds) {
-                    if (seconds < 60) return Math.round(seconds) + 's';
-                    const mins = Math.floor(seconds / 60);
-                    const secs = Math.round(seconds % 60);
-                    return mins + 'm ' + secs + 's';
+                    if (seconds < 0) seconds = 0;
+                    const hours = Math.floor(seconds / 3600);
+                    const mins = Math.floor((seconds % 3600) / 60);
+                    const secs = Math.floor(seconds % 60);
+                    if (hours > 0) {
+                        return String(hours).padStart(2, '0') + ':' + String(mins).padStart(2, '0') + ':' + String(secs)
+                            .padStart(2, '0');
+                    }
+                    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
                 }
 
+                // ===== 优化后的 getNextHint：支持英文提取两个单词 =====
+                function getNextHint(origText, statusArray) {
+                    if (!origText || statusArray.length === 0) return '';
+                    // 找到第一个错误位置
+                    let firstBad = statusArray.findIndex(s => s !== 'correct');
+                    if (firstBad === -1) return '';
+
+                    // 提取 cleanText 用于判断语言
+                    const clean = extractTextContent(origText);
+                    // 统计中文字符比例
+                    let hanCount = 0;
+                    for (let ch of clean) {
+                        if (/[\u4e00-\u9fa5]/.test(ch)) hanCount++;
+                    }
+                    let isChinese = clean.length > 0 && (hanCount / clean.length > 0.3);
+
+                    if (isChinese) {
+                        // 中文：取两个汉字
+                        let result = '';
+                        let count = 0;
+                        for (let i = firstBad; i < clean.length && count < 2; i++) {
+                            if (/[\u4e00-\u9fa5]/.test(clean[i])) {
+                                result += clean[i];
+                                count++;
+                            }
+                        }
+                        return result;
+                    } else {
+                        // 英文：从原始文本中提取两个单词（字母串）
+                        // 1. 映射第一个错误字符在原始文本中的位置
+                        let pos = 0;
+                        let charCount = 0;
+                        let foundPos = -1;
+                        for (let i = 0; i < origText.length; i++) {
+                            const ch = origText[i];
+                            if (/[\u4e00-\u9fa5a-zA-Z0-9]/.test(ch)) {
+                                if (charCount === firstBad) {
+                                    foundPos = i;
+                                    break;
+                                }
+                                charCount++;
+                            }
+                        }
+                        if (foundPos === -1) return '';
+
+                        // 2. 从 foundPos 开始，使用正则匹配两个连续的英文单词（只含字母）
+                        let wordRegex = /[A-Za-z]+/g;
+                        wordRegex.lastIndex = foundPos;
+                        let matches = [];
+                        let match;
+                        while ((match = wordRegex.exec(origText)) !== null) {
+                            if (match.index >= foundPos) {
+                                matches.push(match[0]);
+                                if (matches.length === 2) break;
+                            }
+                        }
+                        if (matches.length === 0) return '';
+                        return matches.join(' ');
+                    }
+                }
+
+                function showFullscreenHint(text) {
+                    if (!echoHintsEnabled) return;
+                    if (text && text !== lastHintShown) {
+                        echoFullscreenHintText.textContent = text;
+                        echoFullscreenHint.classList.add('active');
+                        lastHintShown = text;
+                    }
+                }
+
+                function hideFullscreenHint() {
+                    echoFullscreenHint.classList.remove('active');
+                    lastHintShown = '';
+                }
+
+                // ===== 比较函数：忽略大小写 =====
                 function compareWithLCS(orig, recog) {
                     const m = orig.length;
                     const n = recog.length;
@@ -2976,8 +3226,12 @@
                     for (let i = 0; i <= m; i++) dp[i] = Array(n + 1).fill(0);
                     for (let i = 1; i <= m; i++) {
                         for (let j = 1; j <= n; j++) {
-                            if (orig[i - 1] === recog[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-                            else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                            // 忽略大小写比较
+                            if (orig[i - 1].toLowerCase() === recog[j - 1].toLowerCase()) {
+                                dp[i][j] = dp[i - 1][j - 1] + 1;
+                            } else {
+                                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                            }
                         }
                     }
                     const origMatched = Array(m).fill(false);
@@ -2985,7 +3239,7 @@
                     let i = m,
                         j = n;
                     while (i > 0 && j > 0) {
-                        if (orig[i - 1] === recog[j - 1]) {
+                        if (orig[i - 1].toLowerCase() === recog[j - 1].toLowerCase()) {
                             origMatched[i - 1] = true;
                             recogMatched[j - 1] = true;
                             i--;
@@ -3007,59 +3261,110 @@
                     return { origStatus, recogStatus };
                 }
 
-                function renderEchoRecognition(finalText, interimText, recogStatus) {
-                    const fullText = finalText + interimText;
+                function renderEchoRecognition(fullText, recogStatus) {
                     if (!fullText.trim()) {
                         echoRecogDisplay.innerHTML = '<span class="empty-placeholder">开始背诵后，这里会显示识别结果…</span>';
                         echoRecogCharCount.textContent = '0 字';
                         return;
                     }
                     let html = '';
-                    if (finalText) {
-                        const finalChars = finalText.split('');
-                        let cleanIdx = 0;
-                        for (let idx = 0; idx < finalChars.length; idx++) {
-                            const ch = finalChars[idx];
-                            const isTextChar = /[\u4e00-\u9fa5a-zA-Z0-9]/.test(ch);
-                            if (isTextChar) {
-                                let status = 'pending';
-                                if (recogStatus && cleanIdx < recogStatus.length) status = recogStatus[cleanIdx];
-                                let cls = 'char-highlight ';
-                                if (status === 'correct') cls += 'char-correct';
-                                else if (status === 'wrong') cls += 'char-wrong';
-                                else cls += 'char-pending';
-                                html += `<span class="${cls}">${ch}</span>`;
-                                cleanIdx++;
-                            } else {
-                                html += `<span class="char-skip">${ch}</span>`;
-                            }
-                        }
-                    }
-                    if (interimText) {
-                        const interimChars = interimText.split('');
-                        for (let idx = 0; idx < interimChars.length; idx++) {
-                            html += `<span class="interim-char">${interimChars[idx]}</span>`;
+                    let statusIdx = 0;
+                    for (let idx = 0; idx < fullText.length; idx++) {
+                        const ch = fullText[idx];
+                        const isTextChar = /[\u4e00-\u9fa5a-zA-Z0-9]/.test(ch);
+                        if (isTextChar) {
+                            let status = 'pending';
+                            if (recogStatus && statusIdx < recogStatus.length) status = recogStatus[statusIdx];
+                            let cls = 'char-highlight ';
+                            if (status === 'correct') cls += 'char-correct';
+                            else if (status === 'wrong') cls += 'char-wrong';
+                            else cls += 'char-pending';
+                            html += `<span class="${cls}">${ch}</span>`;
+                            statusIdx++;
+                        } else {
+                            html += `<span class="char-skip">${ch}</span>`;
                         }
                     }
                     echoRecogDisplay.innerHTML = html;
                     echoRecogCharCount.textContent = fullText.length + ' 字';
                 }
 
-                function updateEchoStatsAndScore(origStatus, duration) {
-                    if (!origStatus || origStatus.length === 0) {
-                        echoStatCorrect.textContent = '0';
-                        echoStatWrong.textContent = '0';
-                        echoStatPending.textContent = '0';
-                        echoProgressFill.style.width = '0%';
-                        echoProgressLabel.textContent = '0%';
-                        echoScoreNumber.textContent = '0';
-                        echoScoreGrade.textContent = '-';
-                        echoScoreArc.style.strokeDashoffset = '282.743';
-                        echoStatTime.textContent = '0s';
-                        if (completionTimer) { clearTimeout(completionTimer);
-                            completionTimer = null; }
-                        return;
+                function getCurrentStats() {
+                    const cleanOrig = extractTextContent(originalText);
+                    const cleanRecog = extractTextContent(finalTranscript + interimTranscript);
+                    const { origStatus } = compareWithLCS(cleanOrig, cleanRecog);
+                    let correct = 0,
+                        wrong = 0,
+                        pending = 0;
+                    for (const s of origStatus) {
+                        if (s === 'correct') correct++;
+                        else if (s === 'wrong') wrong++;
+                        else if (s === 'pending') pending++;
                     }
+                    return { origStatus, correct, wrong, pending, total: origStatus.length };
+                }
+
+                // ---- 核心：显示完成覆盖层并询问是否标记（得分>70） ----
+                function handleCompletion(score, grade, correct, wrong, duration, title = '🎉 恭喜完成背诵！') {
+                    showCompletionOverlay(title, score, grade, correct, wrong, duration);
+
+                    if (score > 70) {
+                        const selNum = echoStudentSelect.value;
+                        if (selNum) {
+                            const mgr = window.__manage;
+                            if (mgr) {
+                                const c = mgr.currentClass();
+                                if (c) {
+                                    const student = mgr.getStudentByNum(parseInt(selNum));
+                                    if (student) {
+                                        setTimeout(() => {
+                                            const confirmMsg =
+                                                `✅ 得分 ${score} 分，是否将 ${student.name} 标记为“已完成”？`;
+                                            if (confirm(confirmMsg)) {
+                                                const success = mgr.markStudentDone(parseInt(selNum));
+                                                if (success) {
+                                                    echoShowToast(`✅ ${student.name} 已标记完成`, 2000);
+                                                } else {
+                                                    echoShowToast(`⚠️ 标记失败，请检查学生状态`, 2000);
+                                                }
+                                            }
+                                        }, 300);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                function showCompletionOverlay(title, score, grade, correct, wrong, duration) {
+                    hasShownCompletion = true;
+                    echoCompletionTitle.textContent = title;
+                    echoFinalScore.textContent = score;
+                    echoFinalGrade.textContent = grade;
+                    echoFinalCorrect.textContent = correct;
+                    echoFinalWrong.textContent = wrong;
+                    echoFinalTime.textContent = formatTime(duration);
+                    echoCompletionOverlay.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        echoCompletionOverlay.classList.add('active');
+                    });
+                }
+
+                function hideCompletionOverlay() {
+                    echoCompletionOverlay.classList.remove('active');
+                    setTimeout(() => {
+                        echoCompletionOverlay.classList.add('hidden');
+                    }, 500);
+                }
+
+                function updateFullDisplay(checkCompletion = false) {
+                    const cleanOrig = extractTextContent(originalText);
+                    const cleanRecog = extractTextContent(finalTranscript + interimTranscript);
+                    const { origStatus, recogStatus } = compareWithLCS(cleanOrig, cleanRecog);
+                    lastOrigStatus = origStatus;
+
+                    renderEchoRecognition(finalTranscript + interimTranscript, recogStatus);
+
                     let correct = 0,
                         wrong = 0,
                         pending = 0;
@@ -3099,114 +3404,108 @@
                     echoScoreGrade.textContent = grade;
                     echoScoreGrade.style.color = color;
 
-                    if (duration && duration > 0) echoStatTime.textContent = formatTime(duration);
-                    else echoStatTime.textContent = '0s';
+                    // 更新提示（传入 originalText）
+                    if (origStatus.length > 0) {
+                        const hint = getNextHint(originalText, origStatus);
+                        if (hint) {
+                            nextHintText = hint;
+                            let allCorrect = true;
+                            let hintPos = 0;
+                            const cleanText = extractTextContent(originalText);
+                            for (let i = 0; i < cleanText.length && hintPos < hint.length; i++) {
+                                if (cleanText[i] === hint[hintPos]) {
+                                    if (origStatus[i] !== 'correct') {
+                                        allCorrect = false;
+                                        break;
+                                    }
+                                    hintPos++;
+                                }
+                            }
+                            if (hintPos < hint.length) allCorrect = false;
+                            if (allCorrect) {
+                                hideFullscreenHint();
+                            }
+                        } else {
+                            hideFullscreenHint();
+                        }
+                    } else {
+                        hideFullscreenHint();
+                    }
 
                     // 完成检测
-                    if (pending === 0 && total > 0 && isListening && !isCompleted) {
+                    if (checkCompletion && pending === 0 && total > 0 && isListening && !isCompleted && !hasShownCompletion) {
                         if (completionTimer) clearTimeout(completionTimer);
                         completionTimer = setTimeout(() => {
-                            const cleanOrig = extractTextContent(originalText);
-                            const cleanRecog = extractTextContent(finalTranscript);
-                            const { origStatus: newOrigStatus } = compareWithLCS(cleanOrig, cleanRecog);
-                            const newPending = newOrigStatus.filter(s => s === 'pending').length;
-                            if (newPending === 0 && isListening && !isCompleted) {
+                            if (isCompleted || hasShownCompletion) return;
+                            const newOrig = extractTextContent(originalText);
+                            const newRecog = extractTextContent(finalTranscript + interimTranscript);
+                            const { origStatus: finalStatus } = compareWithLCS(newOrig, newRecog);
+                            const finalPending = finalStatus.filter(s => s === 'pending').length;
+                            if (finalPending === 0 && isListening && !isCompleted && !hasShownCompletion) {
                                 isCompleted = true;
-                                let newCorrect = 0,
-                                    newWrong = 0,
-                                    newTotal = newOrigStatus.length;
-                                for (const s of newOrigStatus) {
-                                    if (s === 'correct') newCorrect++;
-                                    else if (s === 'wrong') newWrong++;
+                                let finalCorrect = 0,
+                                    finalWrong = 0,
+                                    finalTotal = finalStatus.length;
+                                for (const s of finalStatus) {
+                                    if (s === 'correct') finalCorrect++;
+                                    else if (s === 'wrong') finalWrong++;
                                 }
-                                const newScore = newTotal > 0 ? Math.max(0, (newCorrect - newWrong) / newTotal *
-                                    100) : 0;
-                                const finalScoreVal = Math.round(newScore);
+                                const finalScore = finalTotal > 0 ? Math.max(0, (finalCorrect - finalWrong) /
+                                    finalTotal * 100) : 0;
+                                const finalScoreVal = Math.round(finalScore);
                                 const finalGradeVal = (() => {
-                                    if (newScore >= 90) return 'S';
-                                    if (newScore >= 80) return 'A';
-                                    if (newScore >= 70) return 'B';
-                                    if (newScore >= 60) return 'C';
+                                    if (finalScore >= 90) return 'S';
+                                    if (finalScore >= 80) return 'A';
+                                    if (finalScore >= 70) return 'B';
+                                    if (finalScore >= 60) return 'C';
                                     return 'D';
                                 })();
-                                const finalDuration = duration || 0;
-
-                                // 结算：停止录音、显示覆盖层
-                                stopEchoListening();
-
-                                // 显示完成覆盖层
-                                showEchoCompletion(finalScoreVal, finalGradeVal, newCorrect, newWrong,
-                                    finalDuration);
-
-                                // 如果评分 >= 70，弹窗询问是否标记为已完成（在覆盖层之上）
-                                if (finalScoreVal >= 70) {
-                                    const selNum = echoStudentSelect.value;
-                                    if (selNum) {
-                                        const mgr = window.__manage;
-                                        if (mgr) {
-                                            const student = mgr.getStudentByNum(parseInt(selNum));
-                                            if (student) {
-                                                const c = mgr.currentClass();
-                                                if (c) {
-                                                    const doneList = mgr.classData()[c]?.done || [];
-                                                    if (!doneList.some(s => s.num === parseInt(selNum))) {
-                                                        if (confirm(`🎉 评分 ${finalScoreVal} 分，是否将 ${student.name} 标记为「已完成」？`)) {
-                                                            mgr.markStudentDone(parseInt(selNum));
-                                                            echoShowToast(`✅ 已标记 ${student.name} 为已完成！`, 2000);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                // 注意：此处不自动跳转，等待用户点击"继续"按钮
+                                const duration = (endTime > startTime) ? (endTime - startTime) / 1000 : 0;
+                                stopEchoListeningInternal(true);
+                                handleCompletion(finalScoreVal, finalGradeVal, finalCorrect, finalWrong, duration,
+                                    '🎉 恭喜完成背诵！');
                             }
                             completionTimer = null;
-                        }, 1500);
+                        }, 1200);
                     } else {
                         if (completionTimer) { clearTimeout(completionTimer);
                             completionTimer = null; }
                     }
                 }
 
-                function performEchoComparison() {
-                    const orig = originalText;
-                    const recog = finalTranscript;
-                    if (!orig) {
-                        renderEchoRecognition('', '', []);
-                        updateEchoStatsAndScore([], 0);
-                        return;
+                // ---- 定时重启识别 ----
+                function startRestartTimer() {
+                    stopRestartTimer();
+                    restartTimerId = setInterval(() => {
+                        if (isListening && recognition && !isCompleted && !hasShownCompletion) {
+                            try {
+                                recognition._isRestarting = true;
+                                recognition.stop();
+                                setTimeout(() => {
+                                    if (isListening && recognition && !isCompleted && !hasShownCompletion) {
+                                        try {
+                                            recognition.start();
+                                            recognition._isRestarting = false;
+                                        } catch (e) {
+                                            recognition._isRestarting = false;
+                                        }
+                                    } else {
+                                        if (recognition) recognition._isRestarting = false;
+                                    }
+                                }, 300);
+                            } catch (e) { /* ignore */ }
+                        }
+                    }, 25000);
+                }
+
+                function stopRestartTimer() {
+                    if (restartTimerId) {
+                        clearInterval(restartTimerId);
+                        restartTimerId = null;
                     }
-                    const cleanOrig = extractTextContent(orig);
-                    const cleanRecog = extractTextContent(recog);
-                    const { origStatus, recogStatus } = compareWithLCS(cleanOrig, cleanRecog);
-                    lastRecogStatus = recogStatus;
-                    let duration = 0;
-                    if (endTime > startTime && startTime > 0) duration = (endTime - startTime) / 1000;
-                    renderEchoRecognition(finalTranscript, interimTranscript, recogStatus);
-                    updateEchoStatsAndScore(origStatus, duration);
                 }
 
-                function showEchoCompletion(score, grade, correct, wrong, duration) {
-                    echoFinalScore.textContent = score;
-                    echoFinalGrade.textContent = grade;
-                    echoFinalCorrect.textContent = correct;
-                    echoFinalWrong.textContent = wrong;
-                    echoFinalTime.textContent = formatTime(duration);
-                    echoCompletionOverlay.classList.remove('hidden');
-                    requestAnimationFrame(() => {
-                        echoCompletionOverlay.classList.add('active');
-                    });
-                }
-
-                function hideEchoCompletion() {
-                    echoCompletionOverlay.classList.remove('active');
-                    setTimeout(() => {
-                        echoCompletionOverlay.classList.add('hidden');
-                    }, 500);
-                }
-
+                // ---- 语音识别初始化 ----
                 function initEchoRecognition() {
                     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
                     if (!SR) {
@@ -3218,83 +3517,300 @@
                     rec.continuous = true;
                     rec.interimResults = true;
                     rec.maxAlternatives = 1;
+                    rec._isRestarting = false;
 
                     rec.onstart = function() {
+                        if (startTime === 0) {
+                            startTime = performance.now();
+                        }
                         isListening = true;
+                        isManualStop = false;
                         isCompleted = false;
-                        startTime = performance.now();
+                        hasShownCompletion = false;
                         endTime = 0;
                         updateEchoStatus('listening', '🎤 正在听你背诵…');
                         echoBtnStart.disabled = true;
                         echoBtnStop.disabled = false;
+                        clearTimeout(hintTimer);
+                        hintTimer = setTimeout(() => {
+                            if (isListening && !isCompleted && !hasShownCompletion && nextHintText && echoHintsEnabled) {
+                                showFullscreenHint(nextHintText);
+                            }
+                        }, 5000);
+                        startTimerUpdate();
+                        startRestartTimer();
                     };
 
                     rec.onerror = function(event) {
                         console.warn('语音识别错误:', event.error);
                         if (event.error === 'not-allowed') {
                             echoShowToast('❌ 请允许使用麦克风权限后重试。', 3500);
-                            stopEchoListening();
-                        } else if (event.error === 'no-speech') {} else if (event.error === 'audio-capture') {
+                            stopEchoListeningInternal(false);
+                        } else if (event.error === 'no-speech') {
+                            // 静音不处理
+                        } else if (event.error === 'audio-capture') {
                             echoShowToast('❌ 无法访问麦克风，请检查设备。', 3000);
-                            stopEchoListening();
+                            stopEchoListeningInternal(false);
                         } else if (event.error === 'network') {
                             echoShowToast('⚠️ 网络连接失败，请检查网络或代理后重试。', 4000);
-                            stopEchoListening();
+                            stopEchoListeningInternal(false);
                         } else {
                             if (isListening) {
                                 try { rec.stop(); } catch (_) {}
-                                setTimeout(() => { if (isListening) { try { rec.start(); } catch (_) {} } }, 300);
+                                setTimeout(() => {
+                                    if (isListening) {
+                                        try { rec.start(); } catch (_) {
+                                            echoShowToast('⚠️ 识别器异常，请手动重启', 3000);
+                                        }
+                                    }
+                                }, 500);
                             }
                         }
                     };
 
                     rec.onend = function() {
+                        if (rec._isRestarting) {
+                            rec._isRestarting = false;
+                            return;
+                        }
                         if (isListening) {
-                            try { rec.start(); } catch (_) { if (isListening) updateEchoStatus('idle', '⏸ 识别已暂停'); }
+                            try {
+                                rec.start();
+                            } catch (_) {
+                                setTimeout(() => {
+                                    if (isListening) {
+                                        try { rec.start(); } catch (e2) {
+                                            updateEchoStatus('idle', '⏸ 识别已中断');
+                                            echoShowToast('⚠️ 语音识别中断，请手动停止后重试。', 3000);
+                                        }
+                                    }
+                                }, 1000);
+                            }
                         } else {
                             updateEchoStatus('idle', '⏸ 已停止');
+                            stopTimerUpdate();
+                            stopRestartTimer();
                         }
                     };
 
                     rec.onresult = function(event) {
+                        hideFullscreenHint();
+                        clearTimeout(hintTimer);
+                        if (isListening && !isCompleted && !hasShownCompletion) {
+                            hintTimer = setTimeout(() => {
+                                if (isListening && !isCompleted && !hasShownCompletion && nextHintText && echoHintsEnabled) {
+                                    showFullscreenHint(nextHintText);
+                                }
+                            }, 5000);
+                        }
+
                         let final = '';
                         let interim = '';
+                        let hasFinal = false;
                         for (let i = event.resultIndex; i < event.results.length; i++) {
                             const result = event.results[i];
                             const transcript = result[0].transcript;
-                            if (result.isFinal) final += transcript;
-                            else interim += transcript;
+                            if (result.isFinal) {
+                                final += transcript;
+                                hasFinal = true;
+                            } else {
+                                interim += transcript;
+                            }
                         }
-                        interimTranscript = interim;
                         if (final) {
                             finalTranscript += final;
-                            performEchoComparison();
-                        } else {
-                            renderEchoRecognition(finalTranscript, interimTranscript, lastRecogStatus);
+                            interimTranscript = '';
                         }
+                        if (interim) {
+                            interimTranscript = interim;
+                        } else {
+                            if (!final) interimTranscript = '';
+                        }
+
+                        updateFullDisplay(hasFinal);
                     };
                     return rec;
                 }
 
+                // ---- 计时器更新 ----
+                function startTimerUpdate() {
+                    stopTimerUpdate();
+                    timerInterval = setInterval(() => {
+                        if (!isListening || isCompleted || hasShownCompletion) return;
+                        if (startTime === 0) return;
+
+                        const elapsed = (performance.now() - startTime) / 1000;
+
+                        if (isCountdownMode && timeLimitSeconds > 0) {
+                            const remaining = Math.max(0, countdownStartValue - elapsed);
+                            echoStatTime.textContent = formatTime(remaining);
+                            if (remaining <= 0.5 && !isCompleted && !hasShownCompletion) {
+                                const stats = getCurrentStats();
+                                const { origStatus, correct, wrong, total } = stats;
+                                const score = total > 0 ? Math.max(0, (correct - wrong) / total * 100) : 0;
+                                const grade = (() => {
+                                    if (score >= 90) return 'S';
+                                    if (score >= 80) return 'A';
+                                    if (score >= 70) return 'B';
+                                    if (score >= 60) return 'C';
+                                    return 'D';
+                                })();
+                                stopEchoListeningInternal(true);
+                                handleCompletion(Math.round(score), grade, correct, wrong, countdownStartValue,
+                                    '⏰ 时间到！');
+                            }
+                        } else {
+                            echoStatTime.textContent = formatTime(elapsed);
+                        }
+                    }, 200);
+                }
+
+                function stopTimerUpdate() {
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                }
+
+                // ---- 停止 ----
+                function stopEchoListeningInternal(completed) {
+                    isListening = false;
+                    endTime = performance.now();
+                    if (recognition) {
+                        try { recognition.stop(); } catch (_) {}
+                        recognition._isRestarting = false;
+                    }
+                    recognition = null;
+                    echoBtnStart.disabled = false;
+                    echoBtnStop.disabled = true;
+                    if (completionTimer) { clearTimeout(completionTimer);
+                        completionTimer = null; }
+                    clearTimeout(hintTimer);
+                    hintTimer = null;
+                    hideFullscreenHint();
+                    stopTimerUpdate();
+                    stopRestartTimer();
+
+                    if (interimTranscript) {
+                        finalTranscript += interimTranscript;
+                        interimTranscript = '';
+                    }
+                    const elapsed = (endTime - startTime) / 1000;
+                    if (startTime > 0 && elapsed > 0) {
+                        if (isCountdownMode && timeLimitSeconds > 0) {
+                            const remaining = Math.max(0, countdownStartValue - elapsed);
+                            echoStatTime.textContent = formatTime(remaining);
+                        } else {
+                            echoStatTime.textContent = formatTime(elapsed);
+                        }
+                    }
+                    updateEchoStatus('idle', '⏸ 已停止');
+                    if (!completed && !isCompleted && !isManualStop) {
+                        echoShowToast('✅ 背诵已停止', 1500);
+                    }
+                    echoTimeLimitInput.disabled = false;
+                    updateTimerModeBadge();
+                }
+
+                function stopEchoListeningManual() {
+                    if (!isListening || hasShownCompletion) return;
+                    isManualStop = true;
+                    const stats = getCurrentStats();
+                    const { origStatus, correct, wrong, total } = stats;
+                    const score = total > 0 ? Math.max(0, (correct - wrong) / total * 100) : 0;
+                    const grade = (() => {
+                        if (score >= 90) return 'S';
+                        if (score >= 80) return 'A';
+                        if (score >= 70) return 'B';
+                        if (score >= 60) return 'C';
+                        return 'D';
+                    })();
+                    const duration = (endTime > startTime) ? (endTime - startTime) / 1000 : 0;
+                    stopEchoListeningInternal(false);
+                    handleCompletion(Math.round(score), grade, correct, wrong, duration, '⏹ 背诵已停止');
+                }
+
+                // ---- 重置 ----
+                function resetEchoAll() {
+                    hideCompletionOverlay();
+                    isListening = false;
+                    if (recognition) { try { recognition.stop(); } catch (_) {} }
+                    recognition = null;
+                    echoBtnStart.disabled = false;
+                    echoBtnStop.disabled = true;
+                    if (completionTimer) { clearTimeout(completionTimer);
+                        completionTimer = null; }
+                    clearTimeout(hintTimer);
+                    hintTimer = null;
+                    hideFullscreenHint();
+                    stopTimerUpdate();
+                    stopRestartTimer();
+
+                    finalTranscript = '';
+                    interimTranscript = '';
+                    lastOrigStatus = [];
+                    startTime = 0;
+                    endTime = 0;
+                    isCompleted = false;
+                    isManualStop = false;
+                    hasShownCompletion = false;
+                    lastHintShown = '';
+                    nextHintText = '';
+                    renderEchoRecognition('', []);
+                    updateFullDisplay(false);
+                    echoStatTime.textContent = '0s';
+                    updateEchoStatus('idle', '等待开始');
+                    echoShowToast('🔄 已重置', 1200);
+                    echoInputSection.classList.remove('hidden');
+                    echoTimeLimitInput.disabled = false;
+                    updateTimerModeBadge();
+                }
+
+                // ---- 开始背诵 ----
                 function startEchoListening() {
                     if (!originalText.trim()) {
                         echoShowToast('⚠️ 请先载入要背诵的原文！', 2500);
                         return;
                     }
-                    if (!echoCompletionOverlay.classList.contains('hidden')) hideEchoCompletion();
+                    if (!echoCompletionOverlay.classList.contains('hidden')) hideCompletionOverlay();
+
+                    const val = parseFloat(echoTimeLimitInput.value);
+                    if (!isNaN(val) && val > 0) {
+                        timeLimitSeconds = val * 60;
+                        isCountdownMode = true;
+                        countdownStartValue = timeLimitSeconds;
+                    } else {
+                        timeLimitSeconds = 0;
+                        isCountdownMode = false;
+                        countdownStartValue = 0;
+                    }
+                    echoTimeLimitInput.disabled = true;
+                    updateTimerModeBadge();
 
                     if (recognition) { try { recognition.stop(); } catch (_) {} }
                     recognition = initEchoRecognition();
-                    if (!recognition) return;
+                    if (!recognition) {
+                        echoTimeLimitInput.disabled = false;
+                        updateTimerModeBadge();
+                        return;
+                    }
 
                     finalTranscript = '';
                     interimTranscript = '';
-                    lastRecogStatus = [];
+                    lastOrigStatus = [];
                     isCompleted = false;
+                    isManualStop = false;
+                    hasShownCompletion = false;
                     if (completionTimer) { clearTimeout(completionTimer);
                         completionTimer = null; }
-                    renderEchoRecognition('', '', []);
-                    updateEchoStatsAndScore([], 0);
+                    nextHintText = '';
+                    hideFullscreenHint();
+                    clearTimeout(hintTimer);
+                    hintTimer = null;
+                    lastHintShown = '';
+
+                    renderEchoRecognition('', []);
+                    updateFullDisplay(false);
 
                     const selNum = echoStudentSelect.value;
                     if (selNum) {
@@ -3305,6 +3821,8 @@
                                 const doneList = mgr.classData()[c].done || [];
                                 if (doneList.some(s => s.num === parseInt(selNum))) {
                                     if (!confirm(`⚠️ 学生 ${doneList.find(s=>s.num===parseInt(selNum))?.name} 已完成背书，继续？`)) {
+                                        echoTimeLimitInput.disabled = false;
+                                        updateTimerModeBadge();
                                         return;
                                     }
                                 }
@@ -3315,68 +3833,21 @@
                     try { recognition.start(); } catch (e) {
                         echoShowToast('⚠️ 启动语音识别失败，请重试。', 2500);
                         console.error(e);
+                        echoTimeLimitInput.disabled = false;
+                        updateTimerModeBadge();
                     }
+                    echoInputSection.classList.add('hidden');
                 }
 
-                function stopEchoListening() {
-                    isListening = false;
-                    endTime = performance.now();
-                    if (recognition) { try { recognition.stop(); } catch (_) {} }
-                    recognition = null;
-                    echoBtnStart.disabled = false;
-                    echoBtnStop.disabled = true;
-                    if (completionTimer) { clearTimeout(completionTimer);
-                        completionTimer = null; }
-                    if (interimTranscript) {
-                        finalTranscript += interimTranscript;
-                        interimTranscript = '';
-                        performEchoComparison();
-                    } else {
-                        performEchoComparison();
-                    }
-                    updateEchoStatus('idle', '⏸ 已停止');
-                    if (!isCompleted) echoShowToast('✅ 背诵已停止', 1500);
-                }
-
-                // 重置AI状态（不触发跳转）
-                function resetEchoAll() {
-                    hideEchoCompletion();
-                    stopEchoListening();
-                    finalTranscript = '';
-                    interimTranscript = '';
-                    lastRecogStatus = [];
-                    startTime = 0;
-                    endTime = 0;
-                    isCompleted = false;
-                    if (completionTimer) { clearTimeout(completionTimer);
-                        completionTimer = null; }
-                    renderEchoRecognition('', '', []);
-                    updateEchoStatsAndScore([], 0);
-                    updateEchoStatus('idle', '等待开始');
-                    echoBtnStart.disabled = false;
-                    echoBtnStop.disabled = true;
-                    echoShowToast('🔄 已重置', 1200);
-                    // 显示输入区域
-                    echoInputSection.classList.remove('hidden');
-                    // 注意：不重置 _fromManage，由调用者控制
-                }
-
-                // 专门处理"继续"按钮点击
                 function handleCompletionContinue() {
-                    // 关闭覆盖层
-                    hideEchoCompletion();
-
-                    // 判断是否从管理跳转而来
+                    hideCompletionOverlay();
                     if (window._fromManage) {
-                        window._fromManage = false; // 重置标记
-                        // 重置AI状态（清空数据，恢复界面）
+                        window._fromManage = false;
                         resetEchoAll();
-                        // 跳回管理Tab
                         if (window.__manage && window.__manage.switchToManageTab) {
                             window.__manage.switchToManageTab();
                         }
                     } else {
-                        // 手动进入AI，执行重置
                         resetEchoAll();
                     }
                 }
@@ -3389,43 +3860,64 @@
                 function loadEchoSource() {
                     const text = echoSourceText.value;
                     if (!text.trim()) { echoShowToast('⚠️ 请先输入或粘贴原文内容。', 2000); return; }
-                    if (isListening) stopEchoListening();
-                    hideEchoCompletion();
+                    if (isListening) stopEchoListeningInternal(false);
+                    hideCompletionOverlay();
                     originalText = text;
                     finalTranscript = '';
                     interimTranscript = '';
-                    lastRecogStatus = [];
+                    lastOrigStatus = [];
                     startTime = 0;
                     endTime = 0;
                     isCompleted = false;
+                    isManualStop = false;
+                    hasShownCompletion = false;
                     if (completionTimer) { clearTimeout(completionTimer);
                         completionTimer = null; }
-                    performEchoComparison();
+                    clearTimeout(hintTimer);
+                    hintTimer = null;
+                    hideFullscreenHint();
+                    lastHintShown = '';
+                    nextHintText = '';
+                    stopTimerUpdate();
+                    stopRestartTimer();
+                    updateFullDisplay(false);
+                    echoStatTime.textContent = '0s';
                     updateEchoStatus('idle', '✅ 原文已载入');
                     echoShowToast('📥 原文载入成功！请开始背诵。', 1800);
-                    // 隐藏输入区域
-                    echoInputSection.classList.add('hidden');
+                    echoInputSection.classList.remove('hidden');
+                    updateTimerModeBadge();
                 }
 
                 function clearEchoSource() {
-                    if (isListening) stopEchoListening();
-                    hideEchoCompletion();
+                    if (isListening) stopEchoListeningInternal(false);
+                    hideCompletionOverlay();
                     echoSourceText.value = '';
                     originalText = '';
                     finalTranscript = '';
                     interimTranscript = '';
-                    lastRecogStatus = [];
+                    lastOrigStatus = [];
                     startTime = 0;
                     endTime = 0;
                     isCompleted = false;
+                    isManualStop = false;
+                    hasShownCompletion = false;
                     if (completionTimer) { clearTimeout(completionTimer);
                         completionTimer = null; }
-                    renderEchoRecognition('', '', []);
-                    updateEchoStatsAndScore([], 0);
+                    clearTimeout(hintTimer);
+                    hintTimer = null;
+                    hideFullscreenHint();
+                    lastHintShown = '';
+                    nextHintText = '';
+                    stopTimerUpdate();
+                    stopRestartTimer();
+                    renderEchoRecognition('', []);
+                    updateFullDisplay(false);
+                    echoStatTime.textContent = '0s';
                     updateEchoStatus('idle', '等待开始');
                     echoShowToast('🗑️ 已清空，可重新输入', 1000);
-                    // 显示输入区域
                     echoInputSection.classList.remove('hidden');
+                    echoTimeLimitInput.disabled = false;
+                    updateTimerModeBadge();
                 }
 
                 function loadStudentText() {
@@ -3437,8 +3929,47 @@
                     if (!student) { echoShowToast('未找到该学生', 1500); return; }
                     echoShowToast(`已选择 ${student.name}，请在上方输入或粘贴其背诵内容`, 2000);
                     echoSourceText.focus();
-                    // 如果输入区域被隐藏，暂时显示以便编辑
                     echoInputSection.classList.remove('hidden');
+                }
+
+                function updateTimerModeBadge() {
+                    const val = parseFloat(echoTimeLimitInput.value);
+                    const disabled = echoTimeLimitInput.disabled;
+                    if (disabled) {
+                        if (isCountdownMode && timeLimitSeconds > 0) {
+                            echoTimerModeBadge.textContent = '⏳ 倒计时';
+                            echoTimerModeBadge.className = 'mode-badge countdown';
+                        } else {
+                            echoTimerModeBadge.textContent = '⏱️ 正计时';
+                            echoTimerModeBadge.className = 'mode-badge timer';
+                        }
+                        return;
+                    }
+                    if (!isNaN(val) && val > 0) {
+                        echoTimerModeBadge.textContent = '⏳ 倒计时';
+                        echoTimerModeBadge.className = 'mode-badge countdown';
+                    } else {
+                        echoTimerModeBadge.textContent = '⏱️ 正计时';
+                        echoTimerModeBadge.className = 'mode-badge timer';
+                    }
+                }
+
+                // === 提示开关切换 ===
+                function toggleHints() {
+                    echoHintsEnabled = !echoHintsEnabled;
+                    if (echoHintsEnabled) {
+                        echoToggleHintsBtn.textContent = '💡 提示：开';
+                        echoToggleHintsBtn.classList.remove('off');
+                        if (isListening && !isCompleted && !hasShownCompletion && nextHintText) {
+                            showFullscreenHint(nextHintText);
+                        }
+                        echoShowToast('💡 提示已开启', 1200);
+                    } else {
+                        echoToggleHintsBtn.textContent = '🔕 提示：关';
+                        echoToggleHintsBtn.classList.add('off');
+                        hideFullscreenHint();
+                        echoShowToast('🔕 提示已关闭', 1200);
+                    }
                 }
 
                 function attachEchoEvents() {
@@ -3446,15 +3977,18 @@
                     echoBtnClearText.addEventListener('click', clearEchoSource);
                     echoBtnClearSource.addEventListener('click', clearEchoSource);
                     echoBtnStart.addEventListener('click', startEchoListening);
-                    echoBtnStop.addEventListener('click', stopEchoListening);
+                    echoBtnStop.addEventListener('click', stopEchoListeningManual);
                     echoBtnReset.addEventListener('click', resetEchoAll);
-                    // 修改“继续”按钮的监听
                     echoCloseCompletion.addEventListener('click', handleCompletionContinue);
                     echoLoadStudentBtn.addEventListener('click', loadStudentText);
                     echoSourceText.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault();
                             loadEchoSource(); }
                     });
+                    echoTimeLimitInput.addEventListener('input', updateTimerModeBadge);
+                    echoTimeLimitInput.addEventListener('change', updateTimerModeBadge);
+
+                    echoToggleHintsBtn.addEventListener('click', toggleHints);
                 }
 
                 function initEcho() {
@@ -3469,18 +4003,21 @@
                         echoShowToast('⚠️ 当前浏览器不支持语音识别，请使用 Chrome 或 Edge。', 4000);
                         echoBtnStart.disabled = true;
                     }
+                    updateTimerModeBadge();
+                    echoToggleHintsBtn.textContent = '💡 提示：开';
+                    echoToggleHintsBtn.classList.remove('off');
+                    echoHintsEnabled = true;
                 }
 
                 window.__echo = {
                     reset: resetEchoAll,
                     loadSource: loadEchoSource,
                     start: startEchoListening,
-                    stop: stopEchoListening
+                    stop: stopEchoListeningManual
                 };
 
                 initEcho();
 
-                // ===== Tab 切换 =====
                 const tabs = document.querySelectorAll('.app-tab');
                 const contents = {
                     manage: document.getElementById('tabManage'),
@@ -3498,6 +4035,7 @@
                         if (target === 'echo') {
                             const mgr = window.__manage;
                             if (mgr) mgr.updateEchoStudentSelect();
+                            updateTimerModeBadge();
                         }
                     });
                 });
